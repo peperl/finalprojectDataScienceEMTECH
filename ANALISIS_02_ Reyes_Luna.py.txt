@@ -1,0 +1,47 @@
+import pandas as pd
+sldb = pd.read_csv("synergy_logistics_database.csv")
+
+exports = sldb[sldb["direction"] == "Exports"]
+imports = sldb[sldb["direction"] == "Imports"]
+
+valores_transporte = exports.groupby(["origin", "destination", "transport_mode"]).count()
+rutas = valores_transporte['total_value'].sort_values(ascending=False)
+total = rutas.sum()
+rutas = rutas.head(10).reset_index()
+
+rutas["porcentaje"] = (rutas['total_value']/total) * 100
+rutas["porcentaje acum"] = rutas.cumsum()['porcentaje']
+
+valores_transporte = imports.groupby(["origin", "destination", "transport_mode"]).count()
+rutas = valores_transporte['total_value'].sort_values(ascending=False)
+total = rutas.sum()
+rutas = rutas.head(10).reset_index()
+
+rutas["porcentaje"] = (rutas['total_value']/total) * 100
+rutas["porcentaje acum"] = rutas.cumsum()['porcentaje']
+rutas = exports.groupby("transport_mode").sum()["total_value"].sort_values(ascending=False)
+total = rutas.sum()
+rutas = rutas.to_frame()
+rutas["porcentaje"] = (rutas['total_value']/total) * 100
+rutas = imports.groupby("transport_mode").sum()["total_value"].sort_values(ascending=False)
+total = rutas.sum()
+rutas = rutas.to_frame()
+rutas["porcentaje"] = (rutas['total_value']/total) * 100
+valores_transporte = imports.groupby("origin").count()
+rutas = valores_transporte.sort_values(ascending=False, by='total_value')['total_value']
+total = rutas.sum()
+rutas = rutas.reset_index()
+
+rutas["porcentaje"] = (rutas['total_value']/total) * 100
+rutas["porcentaje acum"] = rutas.cumsum()['porcentaje']
+
+result = rutas[ rutas["porcentaje acum"] < 80]
+valores_transporte = exports.groupby("origin").count()
+rutas = valores_transporte.sort_values(ascending=False, by='total_value')['total_value']
+total = rutas.sum()
+rutas = rutas.reset_index()
+
+rutas["porcentaje"] = (rutas['total_value']/total) * 100
+rutas["porcentaje acum"] = rutas.cumsum()['porcentaje']
+
+result = rutas[ rutas["porcentaje acum"] < 80]
